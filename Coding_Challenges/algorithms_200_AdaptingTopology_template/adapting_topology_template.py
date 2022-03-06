@@ -29,7 +29,32 @@ def n_swaps(cnot):
     """
 
     # QHACK #
-
+    start=cnot.wires[0]
+    target=cnot.wires[1]
+    n=len(graph)
+    visited=[False]*n
+    
+    # Init lists to be used
+    q=[]
+    d=[-1]*n
+    
+    q.append(start)
+    visited[start]=True
+    # While there are nodes in que queue
+    while(q):
+        visiting = q.pop(0)
+        # If target is reached
+        if (visiting==target):
+            break
+        
+        # Check adjacent nodes
+        for node in graph[visiting]:      
+            if(not visited[node]):
+                d[node]=d[visiting]+1
+                visited[node]= True
+                q.append(node)
+                
+    return d[target]*2
     # QHACK #
 
 

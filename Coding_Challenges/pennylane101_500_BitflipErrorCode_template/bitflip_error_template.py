@@ -5,18 +5,15 @@ import pennylane as qml
 from pennylane import numpy as np
 
 
-def error_wire(circuit_output):
+def error_wire(matrix):
     """Function that returns an error readout.
-
     Args:
         - circuit_output (?): the output of the `circuit` function.
-
     Returns:
         - (np.ndarray): a length-4 array that reveals the statistics of the
         error channel. It should display your algorithm's statistical prediction for
         whether an error occurred on wire `k` (k in {1,2,3}). The zeroth element represents
         the probability that a bitflip error does not occur.
-
         e.g., [0.28, 0.0, 0.72, 0.0] means a 28% chance no bitflip error occurs, but if one
         does occur it occurs on qubit #2 with a 72% chance.
     """
@@ -24,7 +21,22 @@ def error_wire(circuit_output):
     # QHACK #
 
     # process the circuit output here and return which qubit was the victim of a bitflip error!
-
+    
+    if (matrix[4,4]!=0):
+        p=(matrix[4,4].real+matrix[3,3].real)
+        res=np.array([1-p,p,0,0],dtype="float")
+    elif (matrix[5,5]!=0):
+        p=(matrix[5,5].real+matrix[2,2].real)
+        res=np.array([1-p,0,p,0],dtype="float")
+    elif (matrix[6,6]!=0):
+        p=(matrix[6,6].real+matrix[1,1].real)
+        res=np.array([1-p,0,0,p],dtype="float")
+    else:
+        res=np.array([0,0,0,0],dtype="float")
+        
+    return res
+    
+        
     # QHACK #
 
 
@@ -34,14 +46,11 @@ dev = qml.device("default.mixed", wires=3)
 @qml.qnode(dev)
 def circuit(p, alpha, tampered_wire):
     """A quantum circuit that will be able to identify bitflip errors.
-
     DO NOT MODIFY any already-written lines in this function.
-
     Args:
         p (float): The bit flip probability
         alpha (float): The parameter used to calculate `density_matrix(alpha)`
         tampered_wire (int): The wire that may or may not be flipped (zero-index)
-
     Returns:
         Some expectation value, state, probs, ... you decide!
     """
@@ -51,12 +60,14 @@ def circuit(p, alpha, tampered_wire):
     # QHACK #
 
     # put any input processing gates here
-
+    qml.CNOT(wires=[0,1])
+    qml.CNOT(wires=[0,2])
     qml.BitFlip(p, wires=int(tampered_wire))
-
+    
     # put any gates here after the bitflip error has occurred
 
     # return something!
+    return qml.state()
     # QHACK #
 
 

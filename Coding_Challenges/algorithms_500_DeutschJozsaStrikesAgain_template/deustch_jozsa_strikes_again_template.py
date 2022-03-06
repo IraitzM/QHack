@@ -17,7 +17,68 @@ def deutsch_jozsa(fs):
     """
 
     # QHACK #
+    dev = qml.device("default.qubit", wires=8,shots=1)
+    @qml.qnode(dev)
+    def oracle():
+        
+        # output qubit 2
+        qml.PauliX(wires=2)
+        qml.Hadamard(wires=2)
 
+        for i in range(2):
+            qml.Hadamard(wires=i)
+        # first two entries two th oracle [0,1]
+        #output wire 2
+        qml.PauliX(wires=5)
+        qml.Hadamard(wires=5)
+        # [3,4] wires for fi
+        for i in range(3,5):
+            qml.Hadamard(wires=i)
+        #controlled fi with wires [0,1]
+        # if 00 apply f0, 01 apply f1, 10 apply f2, 11 apply f3 on [3,4] controlled by [0,1]
+        # aditional 2 wires for controll [6 , 7]
+        qml.PauliX(wires=0)
+        qml.PauliX(wires=1)
+        qml.CNOT(wires=[0,6])
+        qml.CNOT(wires=[1,7])
+        qml.PauliX(wires=0)
+        qml.PauliX(wires=1)
+        
+        qml.ctrl(fs[3], control=[0,1])([3,4,5])
+        qml.ctrl(fs[0], control=[6,7])([3,4,5])
+        qml.ctrl(fs[1], control=[1,6])([3,4,5])
+        qml.ctrl(fs[2], control=[0,7])([3,4,5])
+        
+        for i in range(3,5):
+            qml.Hadamard(wires=i)
+            
+        qml.MultiControlledX(control_wires=[3,4], wires=2, control_values='00')
+        
+        #kharaf
+        for i in range(3,5):
+            qml.Hadamard(wires=i)
+        qml.adjoint(qml.ctrl(fs[3], control=[0,1]))([3,4,5])
+        qml.adjoint(qml.ctrl(fs[0], control=[6,7]))([3,4,5])
+        qml.adjoint(qml.ctrl(fs[1], control=[1,6]))([3,4,5])
+        qml.adjoint(qml.ctrl(fs[2], control=[0,7]))([3,4,5])
+        for i in range(3,5):
+            qml.Hadamard(wires=i)
+            
+        qml.CNOT(wires=[0,6])
+        qml.CNOT(wires=[1,7])
+        
+        for i in range(2):
+            qml.Hadamard(wires=i)   
+
+        return qml.probs(wires=[0,1])
+    
+    val=oracle()
+    #print(val)
+    ch="4 same"
+    if (val[0]<0.1):
+        ch="2 and 2"
+       
+    return ch
     # QHACK #
 
 

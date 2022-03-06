@@ -8,12 +8,10 @@ import pennylane as qml
 def generating_fourier_state(n_qubits, m):
     """Function which, given the number of qubits and an integer m, returns the circuit and the angles that generate the state
     QFT|m> following the above template.
-
     Args:
         - n_qubits (int): number of qubits in the circuit.
         - m (int): basis state that we generate. For example, for 'm = 3' and 'n_qubits = 4'
         we would generate the state QFT|0011> (3 in binary is 11).
-
     Returns:
        - (qml.QNode): circuit used to generate the state.
        - (list[float]): angles that generate the state QFT|m>.
@@ -28,6 +26,9 @@ def generating_fourier_state(n_qubits, m):
         # QHACK #
 
         # Add the template of the statement with the angles passed as an argument.
+        for i in range(n_qubits):
+            qml.Hadamard(wires=i)
+            qml.RZ(angles[i],wires=i)
 
         # QHACK #
 
@@ -40,12 +41,13 @@ def generating_fourier_state(n_qubits, m):
 
     def error(angles):
         """This function will determine, given a set of angles, how well it approximates
-        the desired state. Here it will be necessary to call the circuit to work with these results.
-        """
+        the desired state. Here it will be necessary to call the circuit to work with these results."""
 
-        probs = circuit(angles)
         # QHACK #
-
+        state=[int(i) for i in np.binary_repr(m,n_qubits)]
+        qml.BasisState(np.array(state),wires=range(n_qubits))
+        probs = circuit(angles)
+        return (1-probs[m])**2
         # The return error should be smaller when the state m is more likely to be obtained.
 
         # QHACK #
@@ -54,16 +56,15 @@ def generating_fourier_state(n_qubits, m):
     # Do not modify anything from here.
 
     opt = qml.AdamOptimizer(stepsize=0.8)
-    epochs = 5000
+    epochs = 2000
 
     angles = np.zeros(n_qubits, requires_grad=True)
 
     for epoch in range(epochs):
         angles = opt.step(error, angles)
-        angles = np.clip(opt.step(error, angles), -2 * np.pi, 2 * np.pi)
+        angles = np.clip(opt.step(error, angles), -2* np.pi, 2* np.pi)
 
     return circuit, angles
-
 
 if __name__ == "__main__":
     # DO NOT MODIFY anything in this code block

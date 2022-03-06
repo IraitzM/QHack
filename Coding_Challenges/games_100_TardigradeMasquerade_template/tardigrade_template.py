@@ -26,7 +26,35 @@ def compute_entanglement(theta):
     dev = qml.device("default.qubit", wires=3)
 
     # QHACK #
+    @qml.qnode(dev)
+    def with_tardigrade():
+        qml.Hadamard(wires=0)
+        qml.PauliX(wires=1)
+        qml.RY(theta,wires=2)
 
+        qml.CNOT(wires=[2,1])
+        qml.Toffoli(wires=[0,1,2])
+
+        qml.CNOT(wires=[0,1])
+        qml.CNOT(wires=[0,2])
+
+        qml.CRY(-theta,wires=[0,1])
+        
+        return qml.density_matrix([1])
+        
+    dev2 = qml.device("default.qubit", wires=2)
+    
+    @qml.qnode(dev2)
+    def no_tartigrade():
+        qml.PauliX(wires=1)
+        qml.Hadamard(wires=0)
+        qml.CNOT(wires=[0,1])
+        return qml.density_matrix([1])
+    
+    abt=second_renyi_entropy(with_tardigrade())
+    ab=second_renyi_entropy(no_tartigrade())
+    
+    return ab,abt
     # QHACK #
 
 

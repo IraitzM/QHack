@@ -7,10 +7,8 @@ import pennylane as qml
 
 def qRAM(thetas):
     """Function that generates the superposition state explained above given the thetas angles.
-
     Args:
         - thetas (list(float)): list of angles to apply in the rotations.
-
     Returns:
         - (list(complex)): final state.
     """
@@ -29,7 +27,17 @@ def qRAM(thetas):
         # QHACK #
 
         # Create your circuit: the first three qubits will refer to the index, the fourth to the RY rotation.
-
+        for i in range(3):
+            qml.Hadamard(wires=i)
+        for i in range(8):
+            b=np.binary_repr(i,width=3)
+            for j in range(3):
+                if (b[j]=="0"):
+                    qml.PauliX(wires=j)
+            qml.ctrl(qml.RY,control=[0,1,2])(thetas[i],wires=3)
+            for j in range(3):
+                if (b[j]=="0"):
+                    qml.PauliX(wires=j)
         # QHACK #
 
         return qml.state()

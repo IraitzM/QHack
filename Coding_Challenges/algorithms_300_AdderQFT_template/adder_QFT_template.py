@@ -16,7 +16,11 @@ def qfunc_adder(m, wires):
     qml.QFT(wires=wires)
 
     # QHACK #
-
+    binary_m=[int(np.binary_repr(m,width=len(wires))[i]) for i in range(len(wires))]
+    n=len(wires)
+    for p in range(n):
+        for k in range(p,n):            
+            qml.U1((np.pi/(2**(k-p)))*binary_m[k],wires=wires[n-p-1])
     # QHACK #
 
     qml.QFT(wires=wires).inv()

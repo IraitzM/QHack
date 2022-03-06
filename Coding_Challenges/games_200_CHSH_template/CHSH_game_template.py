@@ -18,7 +18,9 @@ def prepare_entangled(alpha, beta):
     """
 
     # QHACK #
-
+    theta=2*np.arccos(alpha/np.sqrt(alpha**2+beta**2))
+    qml.RY(theta,wires=0)
+    qml.CNOT(wires=[0,1])
     # QHACK #
 
 @qml.qnode(dev)
@@ -42,7 +44,11 @@ def chsh_circuit(theta_A0, theta_A1, theta_B0, theta_B1, x, y, alpha, beta):
     prepare_entangled(alpha, beta)
 
     # QHACK #
-
+    theta_alice=theta_A0*(1-x)+x*theta_A1
+    theta_bob=theta_B0*(1-y)+y*theta_B1
+    
+    qml.adjoint(qml.RY)(2*theta_alice,wires=0)
+    qml.adjoint(qml.RY)(2*theta_bob,wires=1)
     # QHACK #
 
     return qml.probs(wires=[0, 1])
@@ -61,7 +67,17 @@ def winning_prob(params, alpha, beta):
     """
 
     # QHACK #
-
+    s=0.0
+    
+    for x in range(2):
+        for y in range(2):
+            probs=chsh_circuit(params[0], params[1], params[2], params[3], x, y, alpha, beta)
+            if (x*y==0):
+                s+=(probs[0]+probs[3])*0.25
+            if (x*y==1):
+                s+=(probs[1]+probs[2])*0.25
+        
+    return s
     # QHACK #
     
 
@@ -82,9 +98,10 @@ def optimize(alpha, beta):
     # QHACK #
 
     #Initialize parameters, choose an optimization method and number of steps
-    init_params = 
-    opt =
-    steps =
+    np.random.seed(42)
+    init_params = np.array([0.1,0.1,0.1,0.1], requires_grad=True)
+    opt = qml.AdamOptimizer(stepsize=0.4)
+    steps = 300
 
     # QHACK #
     
@@ -94,9 +111,7 @@ def optimize(alpha, beta):
     for i in range(steps):
         # update the circuit parameters 
         # QHACK #
-
-        params = 
-
+        params = opt.step(cost, params)
         # QHACK #
 
     return winning_prob(params, alpha, beta)

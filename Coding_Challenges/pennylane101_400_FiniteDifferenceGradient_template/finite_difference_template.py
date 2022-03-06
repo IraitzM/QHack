@@ -10,19 +10,24 @@ dev = qml.device("default.qubit", wires=3)
 def my_finite_diff_grad(params):
     """Function that returns the gradients of the cost function (defined below) with respect 
     to all parameters in params.
-
     Args:
         - params (np.ndarray): The parameters needed to create the variational circuit.
-
     Returns:
         - gradients (np.ndarray): the gradient w.r.t. each parameter
     """
 
     gradients = np.zeros([len(params)])
+    
+    eps=0.0001
     for i in range(len(params)):
-        # QHACK # 
-
-        # QHACK #
+        eps_i=np.zeros([len(params)])
+        eps_i[i]=eps/2
+        t1_params=[params[i]+eps_i[i] for i in range(len(params))]
+        t1=cost(t1_params)
+        t2_params=[params[i]-eps_i[i] for i in range(len(params))]
+        t2=cost(t2_params)
+        gradients[i]=(t1-t2)/eps
+    
 
     return gradients
 
@@ -50,10 +55,8 @@ def variational_circuit(params):
 @qml.qnode(dev)
 def cost(params):
     """A QNode that pairs the variational_circuit with an expectation value measurement.
-
     Args:
         - params (np.ndarray): Variational circuit parameters
-
     Returns:
         - (float): qml.expval(qml.PauliY(0) @ qml.PauliZ(2))
     """

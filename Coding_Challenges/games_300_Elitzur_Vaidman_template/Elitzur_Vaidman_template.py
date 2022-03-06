@@ -20,7 +20,8 @@ def is_bomb(angle):
     """
 
     # QHACK #
-
+    qml.RY(angle*2,wires=0)
+    qml.PauliX(wires=0)
     # QHACK #
 
     return qml.sample(qml.PauliZ(0))
@@ -38,7 +39,7 @@ def bomb_tester(angle):
     """
 
     # QHACK #
-
+    qml.RY(angle*2,wires=0)
     # QHACK #
 
     return qml.sample(qml.PauliZ(0))
@@ -56,7 +57,21 @@ def simulate(angle, n):
     """
 
     # QHACK #
-
+    p=0
+    s=0
+    for i in range(10000//n):
+        n1=0
+        n2=0
+        for j in range(n):
+            if is_bomb(angle)==1:
+                n2+=1#Number of bombs that did not explode
+                n1+=(bomb_tester(angle)==-1) #Number of times that D beeps
+            else:
+                break
+        if n2!=0:
+            s+=1
+            p+=n1/n2
+    return p/s
     # QHACK #
 
 
